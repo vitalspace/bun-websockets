@@ -21,6 +21,7 @@ const handleMessage = (ws: ServerWebSocket<unknown>, msg: string | Buffer) => {
   switch (type) {
     // Sends back the unique connection ID
     case "giveMyId":
+      //@ts-ignore
       ws.send(JSON.stringify({ type: "giveMyId", body: { id: ws.id } }));
       break;
 
@@ -37,7 +38,9 @@ const handleMessage = (ws: ServerWebSocket<unknown>, msg: string | Buffer) => {
 
     // Prints a message to the console
     case "hello":
+      //@ts-ignore
       console.log(`${ws.id} says: ${body.message}`);
+      //@ts-ignore
       ws.send(JSON.stringify({ type: "hello", body: { id: ws.id } }));
       break;
 
@@ -54,6 +57,7 @@ const handleMessage = (ws: ServerWebSocket<unknown>, msg: string | Buffer) => {
 // Creates the server
 const server = serve({
   // Handles HTTP requests
+  //@ts-ignore
   async fetch(req, ctx) {
     ctx.upgrade(req);
   },
@@ -63,7 +67,9 @@ const server = serve({
     // On connection
     open(ws) {
       users.add(ws);
+      //@ts-ignore
       ws.id = uuidv4();
+      //@ts-ignore
       console.log(`${ws.id} connected`);
     },
 
@@ -75,6 +81,7 @@ const server = serve({
     // On disconnection
     close(ws) {
       users.delete(ws);
+      //@ts-ignore
       console.log(`${ws.id} disconnected`);
     },
   },
