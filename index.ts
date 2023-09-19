@@ -16,6 +16,7 @@ function uuidv4() {
 // Handles incoming messages
 const handleMessage = (ws: ServerWebSocket<unknown>, msg: string | Buffer) => {
   // Parses the message
+  //@ts-ignore
   const { type, body } = JSON.parse(msg);
 
   switch (type) {
