@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chat WebSocket</title>
+    <style>
+      * {
+        margin: 0%;
+        padding: 0%;
+        text-align: center;
+
+        .container {
+          display: grid;
+          place-items: center;
+          height: 100vh;
+
+          & section {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+
+            .user-id-container {
+              padding: 1em;
+              border: 1px solid;
+            }
+
+            .msg-container {
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              border: 1px solid;
+              padding: 1em;
+              gap: 0.2em;s
+
+            }
+
+            .calculator-container {
+              border: 1px solid;
+              padding: 1em;
+              display: flex;
+              flex-direction: column;
+              gap: 0.2em;
+
+              > div {
+                display:  flex;
+                > input {
+
+                  width: 100%;
+                }
+              }
+            }
+
+            .hello-container {
+              border: 1px solid;
+              padding: 1em;
+              display: flex;
+              flex-direction: column;
+              gap: 0.2em;
+            }
+
+            .date-container {
+              border: 1px solid;
+              padding: 1em;
+              display: flex;
+              flex-direction: column;
+              gap: 0.2em;
+            }
+          }
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <section>
+        <div class="user-id-container">
+          <h3>Id</h3>
+          <div id="user-id"></div>
+        </div>
+        <div class="msg-container">
+          <h3>Send Message to server</h3>
+          <input id="messageInput" type="text" placeholder="Message" />
+          <input
+            id="message-server"
+            type="text"
+            placeholder="Server you say: "
+          />
+          <button id="sendMsgBtn">Send Message</button>
+        </div>
+
+        <div class="calculator-container">
+          <h3>Calculator</h3>
+          <input type="text" name="" id="result" placeholder="Result" />
+          <div>
+            <input id="num1" type="number" placeholder="Number 1" />
+            <input id="num2" type="number" placeholder="Number 2" />
+          </div>
+          <button id="sum-btn">Enviar Suma</button>
+        </div>
+
+        <div class="hello-container">
+          <h3>Say hello to the server</h3>
+          <div id="hello-server"></div>
+          <button id="hello-btn">Hi server</button>
+        </div>
+
+        <div class="date-container">
+          <h3>Get date from server</h3>
+          <div id="date-from-server"></div>
+          <button id="date-btn">Get date</button>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const socket = new WebSocket("ws://localhost:3000");
+
+      const handleMessage = (ws, msg) => {
+        const { type, body } = JSON.parse(msg.data);
+        switch (type) {
+          case "giveMyId":
+            document.querySelector("#user-id").textContent = body.id;
+            break;
+          case "message":
+            document.querySelector(
+              "#message-server"
+            ).value = `Server you say: ${body}`;
+            break;
+          case "sum":
+            document.getElementById("result").value = body.result;
+            break;
+          case "hello":
+            document.querySelector(
+              "#hello-server"
+            ).textContent = `Server say: Hello ${body.id.slice(0, 15)}`;
+            break;
+          case "date":
+            document.querySelector(
+              "#date-from-server"
+            ).textContent = `Date from server: ${body.date}`;
+            break;
+        }
+      };
+
+      socket.addEventListener("open", (ws) => {
+        console.log("Connected!");
+        socket.send(JSON.stringify({ type: "giveMyId" }));
+      });
+
+      socket.addEventListener("message", (msg) => {
+        const div = document.createElement("div");
+        handleMessage(socket, msg);
+      });
+
+      document.getElementById("sendMsgBtn").addEventListener("click", () => {
+        const input = document.getElementById("messageInput").value;
+        socket.send(JSON.stringify({ type: "message", body: input }));
+      });
+
+      document.getElementById("sum-btn").addEventListener("click", () => {
+        const num1 = document.getElementById("num1").value;
+        const num2 = document.getElementById("num2").value;
+        socket.send(
+          JSON.stringify({ type: "sum", body: { num1: num1, num2: num2 } })
+        );
+      });
+
+      document.getElementById("hello-btn").addEventListener("click", () => {
+        socket.send(
+          JSON.stringify({ type: "hello", body: { message: "Hello server" } })
+        );
+      });
+
+      document.getElementById("date-btn").addEventListener("click", () => {
+        socket.send(JSON.stringify({ type: "date" }));
+      });
+    </script>
+  </body>
+</html>
